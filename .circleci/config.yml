@@ -12,11 +12,11 @@ jobs:
       - checkout
       - docker/check
       - docker/build:
-          image: danielweiskopf/circle2
+          image: danielweiskopf/eksTest
           tag: "latest,$CIRCLE_SHA1"
       - docker/push:
           digest-path: /tmp/digest.txt
-          image: danielweiskopf/circle2
+          image: danielweiskopf/eksTest
           tag: "latest,$CIRCLE_SHA1"
       - run:
           command: |
