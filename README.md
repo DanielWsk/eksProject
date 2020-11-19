@@ -11,4 +11,3 @@ Finally, if the code passes the checks, it is deployed to AWS ECS.
 
 - These steps are layed out within the .cirlceci/conf.yml file. First the image is build and pushed to Docker Hub, then the test file is run to test the python program. (If the test fails, the entire pipeline fails and the commit is canceled.) And then the image is deployed to an ECS service running on AWS.  
 
-This is the EKS Branch
