@@ -1,0 +1,54 @@
+version: 2.1
+
+jobs:
+  build-and-push:
+    executor: docker/docker
+    steps:
+      - setup_remote_docker
+      - checkout
+      - docker/check
+      - docker/build:
+          image: danielweiskopf/circle2
+          tag: "latest,$CIRCLE_SHA1"
+      - docker/push:
+          digest-path: /tmp/digest.txt
+          image: danielweiskopf/circle2
+          tag: "latest,$CIRCLE_SHA1"
+      - run:
+          command: |
+            echo "Digest is: $(</tmp/digest.txt)"
+            echo "hello world!!!"
+  test:
+    docker:
+      - image: "circleci/python:3.6.4"
+    steps:
+      - checkout
+      - run: pip install --user -r requirements.txt
+      - run: python3 test.py
+      
+  deploy:
+    docker:
+      - image: circleci/python:3.7
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            pip install ecs-deploy
+      - run:
+          name: Deploy
+          command: |
+            ecs deploy $ECS_CLUSTER_NAME $ECS_SERVICE --image custom danielweiskopf/circle2:$CIRCLE_SHA1 --timeout 1200 --ignore-warnings --region $AWS_REGION
+orbs:
+  docker: circleci/docker@1.4.0      
+workflows:
+  build_and_test:
+    jobs:
+      - build-and-push
+      - test:
+          requires:
+            - build-and-push
+      - deploy:
+          requires:
+            - build-and-push
+            - test

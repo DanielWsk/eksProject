@@ -1,0 +1,30 @@
+version: 2.1
+
+orbs:
+  aws-eks: circleci/aws-eks@1.0.3
+
+jobs:
+  build-and-push:
+    executor: docker/docker
+    steps:
+      - setup_remote_docker
+      - checkout
+      - docker/check
+      - docker/build:
+          image: danielweiskopf/circle2
+          tag: "latest,$CIRCLE_SHA1"
+      - docker/push:
+          digest-path: /tmp/digest.txt
+          image: danielweiskopf/circle2
+          tag: "latest,$CIRCLE_SHA1"
+      - run:
+          command: |
+            echo "Digest is: $(</tmp/digest.txt)"
+            echo "hello world!!!"
+  test:
+    docker:
+      - image: "circleci/python:3.6.4"
+    steps:
+      - checkout
+      - run: pip install --user -r requirements.txt
+      - run: python3 test.py
