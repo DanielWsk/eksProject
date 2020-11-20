@@ -30,6 +30,23 @@ jobs:
       - checkout
       - run: pip install --user -r requirements.txt
       - run: python3 test.py
+  create-cluster:
+    executor: aws-eks/python3
+    parameters:
+      cluster-name: 
+        description: |
+          cluster created by circleci
+        type: string
+    steps:
+      - kubernetes/install
+      - aws-eks/update-kubeconfig-with-authenticator:
+          cluster-name: << parameters.cluster-name >>
+      - run:
+          command: |
+            kubectl get services
+          name: Test cluster
+
+
 
 workflows:
   build_and_test:
@@ -38,3 +55,11 @@ workflows:
       - test:
           requires:
             - build-and-push
+  deploy:
+    jobs:
+      - aws-eks/create-cluster:
+          cluster-name: my-eks-demo
+      - aws-eks/delete-cluster:
+          cluster-name: my-eks-demo
+          requires:
+            - create-cluster
