@@ -3,6 +3,7 @@ version: 2.1
 orbs:
   aws-eks: circleci/aws-eks@1.0.3
   docker: circleci/docker@1.4.0  
+  kubernetes: circleci/kubernetes
 
 jobs:
   build-and-push:
